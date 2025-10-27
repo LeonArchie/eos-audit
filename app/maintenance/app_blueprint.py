@@ -3,12 +3,14 @@
 
 from k8s.healthz import healthz_bp
 from k8s.readyz import readyz_bp
+from api.create.audit_handlers import audit_bp
 from api.error_handlers import not_found
 
 def register_blueprints(app):
     """Регистрация всех blueprint'ов в приложении"""
     app.register_blueprint(healthz_bp)
     app.register_blueprint(readyz_bp)
+    app.register_blueprint(audit_bp)
 
 def register_error_handlers(app):
     """Регистрация обработчиков ошибок"""

@@ -1,15 +1,151 @@
 openapi: 3.0.0
 info:
   title: Configuration Management API
-  description: API для у
+  description: API для управления конфигурациями и аудитом
   version: 1.0.0
   contact:
-    name: Ответсвенный
+    name: Петунин Лев Михайлович
   license:
     name: AGPL-3.0-only WITH LICENSE-ADDITIONAL
 
 servers:
-  - url: http://app-service:5000
+  - url: http://app-audit-service:5000
     description: Локальный сервер разработки (v1 API)
 
 paths:
+  /api/v1/create:
+    post:
+      summary: Создание записи аудита
+      description: Создает новую запись в журнале аудита
+      tags:
+        - Audit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - module_name
+                - object_id
+                - initiator_id
+                - message
+              properties:
+                time:
+                  type: string
+                  format: date-time
+                  description: Время события (опционально)
+                  example: "2024-01-15T10:30:00Z"
+                module_name:
+                  type: string
+                  maxLength: 45
+                  description: Название модуля
+                  example: "users"
+                object_id:
+                  type: string
+                  format: uuid
+                  description: UUID объекта
+                  example: "123e4567-e89b-12d3-a456-426614174000"
+                initiator_id:
+                  type: string
+                  format: uuid
+                  description: UUID инициатора действия
+                  example: "123e4567-e89b-12d3-a456-426614174001"
+                message:
+                  type: string
+                  description: Сообщение аудита
+                  example: "Пользователь создан"
+      responses:
+        '201':
+          description: Запись аудита успешно создана
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message_id:
+                    type: integer
+                    description: ID созданной записи
+                    example: 12345
+                  message:
+                    type: string
+                    example: "Запись аудита успешно создана"
+        '400':
+          description: Ошибка валидации или неверный запрос
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid content type"
+                  message:
+                    type: string
+                    example: "Content-Type должен быть application/json"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Internal server error"
+                  message:
+                    type: string
+                    example: "Внутренняя ошибка сервера"
+
+components:
+  schemas:
+    AuditRecord:
+      type: object
+      required:
+        - module_name
+        - object_id
+        - initiator_id
+        - message
+      properties:
+        time:
+          type: string
+          format: date-time
+        module_name:
+          type: string
+          maxLength: 45
+        object_id:
+          type: string
+          format: uuid
+        initiator_id:
+          type: string
+          format: uuid
+        message:
+          type: string
+    AuditResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message_id:
+          type: integer
+        message:
+          type: string
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        success:
+          type: boolean
+
+tags:
+  - name: Audit
+    description: Операции с журналом аудита
